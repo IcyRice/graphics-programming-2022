@@ -13,6 +13,18 @@ out vec4 shadedColor;
 // TODO exercise 5 setup the uniform variables needed for lighting
 // light uniform variables
 
+uniform vec3 ambientLightColor;
+uniform float ambientReflectance;
+uniform vec3 reflectionColor;
+
+uniform vec3 light1Position;
+uniform vec3 light1Color;
+uniform float diffuseReflectance;
+
+uniform float specularReflectance;
+uniform float specularExponent;
+
+
 // material properties
 
 
@@ -29,14 +41,25 @@ void main() {
 
    // TODO 5.1 ambient
 
+   vec3 r_ambient = ambientLightColor * ambientReflectance * reflectionColor;
+
    // TODO 5.2 diffuse
 
+   vec3 lDir = normalize(light1Position - P.xyz);
+   float cos0 = dot(N, lDir);
+   vec3 r_diffuse = light1Color * diffuseReflectance * cos0;
+
    // TODO 5.3 specular
+
+   vec3 cam_dir = normalize(camPosition - P.xyz);
+   vec3 H = normalize(lDir - cam_dir);
+   vec3 r_specular = light1Color * specularReflectance * pow(dot(N, H), specularExponent);
 
    // TODO exercise 5.5 - attenuation - light 1
 
 
    // TODO set the output color to the shaded color that you have computed
-   shadedColor = vec4(.8, .8, .8, 1.0);
-
+   //shadedColor = vec4(.8, .8, .8, 1.0);
+   shadedColor = vec4(r_ambient + r_diffuse + r_specular, 1.0); //* vec4(.8, .8, .8, 1.0);
+   
 }

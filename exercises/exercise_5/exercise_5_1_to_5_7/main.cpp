@@ -246,6 +246,16 @@ void setLightUniforms()
 {
     // TODO exercise 5 - set the missing uniform variables here
     // light uniforms
+	shader->setVec3("ambientLightColor", config.ambientLightColor * config.ambientLightIntensity);
+	shader->setFloat("ambientReflectance", config.ambientReflectance);
+	shader->setVec3("reflectionColor", config.reflectionColor);
+
+	shader->setVec3("light1Position", config.light1Position);
+	shader->setVec3("light1Color", config.light1Color * config.light1Intensity);
+	shader->setFloat("diffuseReflectance", config.diffuseReflectance);
+
+	shader->setFloat("specularReflectance", config.specularReflectance);
+	shader->setFloat("specularExponent", config.specularExponent);
 }
 
 
@@ -256,7 +266,6 @@ void drawObjects(){
 
     // TODO exercise 5 - set the missing uniform variables here
     // material uniforms
-
 
 
 

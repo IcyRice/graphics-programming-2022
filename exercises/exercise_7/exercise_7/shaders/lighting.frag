@@ -53,14 +53,17 @@ void main()
 
    // TODO 7.4 Reconstruct Z component of the normal, knowing that the normal length is 1  (X*X + Y*Y + Z*Z = 1)
 
-
+   normal.z = sqrt(1 - (normal.x * normal.x) - (normal.y * normal.y));
 
    // Read NormalGBuffer
    vec4 others = texture(OthersGBuffer, texCoords);
 
    // TODO 7.5 : Unpack the remaining data - Remember to put values in their original range
 
-
+   float ambientReflectance = others.x;
+   float diffuseReflectance = others.y;
+   float specualarReflectance = others.z;
+   float specularExponent = others.w * 100;
 
    // TODO 7.6 : Compute the light vector (L) as usual. lightPosition is already in view space
 
@@ -72,7 +75,7 @@ void main()
 
 
    // Debug output for view space position
-   FragColor = P;
+   //FragColor = P;
 
    // TODO 7.3 Output albedo to fragment color
    //FragColor = vec4(albedo, 1.0f);
@@ -81,7 +84,7 @@ void main()
    //FragColor = vec4(normal, 1.0f);
 
    // TODO 7.5 Output others to fragment color
-   //FragColor = others;
+   FragColor = others;
 
    // TODO 7.6 Output lighting to fragment color
    //FragColor = vec4(lighting, 1.0f);

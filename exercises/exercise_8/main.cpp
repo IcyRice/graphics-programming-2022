@@ -67,6 +67,8 @@ bool isPaused = false; // stop camera movement when GUI is open
 
 float lightRotationSpeed = 1.0f;
 
+const float PI = 3.14159265359;
+
 // structure to hold lighting info
 // -------------------------------
 struct Light
@@ -365,7 +367,7 @@ void setLightUniforms(Light& light)
     glm::vec3 lightEnergy = light.color * light.intensity;
 
     // TODO 8.3 : if we are using the PBR shader, multiply the lightEnergy by PI to match the color of the previous setup
-
+	if (shader == pbr_shading) lightEnergy *= PI;
 
     // light uniforms
     shader->setVec3("lightPosition", light.position);

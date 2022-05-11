@@ -239,8 +239,9 @@ int main()
         {
             glm::vec4 rotatedLight = glm::rotate(glm::mat4(1.0f), lightRotationSpeed * deltaTime, glm::vec3(0.0f, 1.0f, 0.0f)) * glm::vec4(config.lights[1].position, 1.0f);
             config.lights[1].position = glm::vec3(rotatedLight.x, rotatedLight.y, rotatedLight.z);
-        }
-
+			config.lights[0].position = glm::vec3(sin(currentFrame), cos(currentFrame), 0);
+        } // lights[0] is the sun
+		// the position of the sun is the direction that I need to move on each frame
         glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -578,7 +579,7 @@ void drawShadowMap()
     float near_plane = 1.0f;
     float shadowMapSize = 6.0f;
     float shadowMapDepthRange = 10.0f;
-    float half = shadowMapSize / 2.0f;
+    float half = shadowMapSize / 2.0f; // bounding the area of the shadowmap - should be enlarged for my project
     glm::mat4 lightProjection = glm::ortho(-half, half, -half, half, near_plane, near_plane + shadowMapDepthRange);
     glm::mat4 lightView = glm::lookAt(glm::normalize(config.lights[0].position) * shadowMapDepthRange * 0.5f, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
     lightSpaceMatrix = lightProjection * lightView;

@@ -219,9 +219,10 @@ void main()
    vec3 albedo = texture(texture_diffuse1, textureCoordinates).xyz;
    albedo *= reflectionColor;
 
-   bool positional = lightRadius > 0;
+   bool positional = lightRadius > 0; // directional light when lightRadius = 0 (definition)
 
-   vec3 L = normalize(lightPosition - (positional ? P.xyz : vec3(0.0f)));
+   vec3 L = normalize(lightPosition - (positional ? P.xyz : vec3(0.0f))); // lightPosition is a directional when we do the sun (directional light)
+   // We use the same code for both the directional and the point light
    vec3 V = normalize(camPosition - P.xyz);
 
    vec3 ambient = GetAmbientLighting(albedo, N);

@@ -1,14 +1,11 @@
-#include "SDFMaterial.h"
+#include "Material.h"
 
-#include "SDFShader.h"
-
-SDFMaterial::SDFMaterial(const SDFShader* shader)
+Material::Material(const Shader* shader)
     :m_Shader(shader)
 {
-    m_Textures.reserve(32);
 }
 
-void SDFMaterial::Use() const
+void Material::Use() const
 {
     m_Shader->Use();
 
@@ -16,15 +13,9 @@ void SDFMaterial::Use() const
     {
         m_Shader->SetUniform(it.second, &m_ValuePool[it.first]);
     }
-
-    for (int i = 0; i < m_Textures.size(); ++i)
-    {
-        glActiveTexture(GL_TEXTURE0 + i);
-        glBindTexture(GL_TEXTURE_2D, m_Textures[i]);
-    }
 }
 
-SDFMaterial::PropertyID SDFMaterial::FindProperty(const char* name)
+Material::PropertyID Material::FindProperty(const char* name)
 {
     PropertyID propertyId = InvalidPropertyID;
 
@@ -54,7 +45,7 @@ SDFMaterial::PropertyID SDFMaterial::FindProperty(const char* name)
     return propertyId;
 }
 
-SDFMaterial::PropertyID SDFMaterial::AddProperty(int location)
+Material::PropertyID Material::AddProperty(int location)
 {
     unsigned int uniformIndex = m_Shader->GetUniformIndex(location);
 
@@ -69,13 +60,5 @@ SDFMaterial::PropertyID SDFMaterial::AddProperty(int location)
     m_Properties[propertyId] = uniformIndex;
     m_LocationProperties[location] = propertyId;
     return propertyId;
-}
-
-void SDFMaterial::AddTexture(const char* samplerName, unsigned int textureId)
-{
-    assert(m_Textures.size() < 32);
-
-    SetPropertyValue(samplerName, (int)m_Textures.size());
-    m_Textures.push_back(textureId);
 }
 

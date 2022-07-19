@@ -6,12 +6,12 @@
 #include <string>
 #include <iostream>
 
-class SDFShader;
+#include "Shader.h"
 
-class SDFMaterial
+class Material
 {
 public:
-    SDFMaterial(const SDFShader* shader);
+    Material(const Shader* shader);
 
     typedef unsigned int PropertyID;
     static const PropertyID InvalidPropertyID = ~0u;
@@ -33,9 +33,7 @@ public:
     template <typename T>
     T* GetPropertyPointer(PropertyID propertyId);
 
-    void AddTexture(const char* samplerName, unsigned int textureId);
-
-    const SDFShader* GetShader() const { return m_Shader; }
+    const Shader& GetShader() const { return *m_Shader; }
 
     void Use() const;
 
@@ -46,14 +44,12 @@ private:
     template <typename T>
     bool ValidateProperty(PropertyID propertyId) const;
 
-    const SDFShader* m_Shader;
+    const Shader *m_Shader;
 
     std::unordered_map<PropertyID, unsigned int> m_Properties;
     std::unordered_map<int, PropertyID> m_LocationProperties;
 
     std::unordered_set<std::string> m_MissingProperties;
-
-    std::vector<unsigned int> m_Textures;
 
     static_assert(sizeof(int) == sizeof(float), "Using the same pool for ints and floats, size must match");
     std::vector<int> m_ValuePool;
@@ -61,7 +57,7 @@ private:
 
 
 template <typename T>
-bool SDFMaterial::ValidateProperty(PropertyID propertyId) const
+bool Material::ValidateProperty(PropertyID propertyId) const
 {
     bool valid = false;
 
@@ -82,7 +78,7 @@ bool SDFMaterial::ValidateProperty(PropertyID propertyId) const
 
 
 template <typename T>
-bool SDFMaterial::SetPropertyValue(PropertyID propertyId, const T& value)
+bool Material::SetPropertyValue(PropertyID propertyId, const T& value)
 {
     bool valid = ValidateProperty<T>(propertyId);
     if (valid)
@@ -93,7 +89,7 @@ bool SDFMaterial::SetPropertyValue(PropertyID propertyId, const T& value)
 }
 
 template <typename T>
-bool SDFMaterial::GetPropertyValue(PropertyID propertyId, T& value) const
+bool Material::GetPropertyValue(PropertyID propertyId, T& value) const
 {
     bool valid = ValidateProperty<T>(propertyId);
     if (valid)
@@ -104,7 +100,7 @@ bool SDFMaterial::GetPropertyValue(PropertyID propertyId, T& value) const
 }
 
 template <typename T>
-T* SDFMaterial::GetPropertyPointer(PropertyID propertyId)
+T* Material::GetPropertyPointer(PropertyID propertyId)
 {
     bool valid = ValidateProperty<T>(propertyId);
     return valid ? reinterpret_cast<T*>(&m_ValuePool[propertyId]) : nullptr;

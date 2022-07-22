@@ -36,6 +36,7 @@ Shader* shader;
 Shader* phong_shading;
 Shader* pbr_shading;
 Shader* shadowMap_shader;
+Model* treeModel;
 Model* carBodyModel;
 Model* carPaintModel;
 Model* carInteriorModel;
@@ -175,6 +176,7 @@ int main()
     pbr_shading = new Shader("shaders/common_shading.vert", "shaders/pbr_shading.frag");
     shader = pbr_shading;
 
+	treeModel = new Model("tree/tree_obj.obj");
     carBodyModel = new Model("car/Body_LOD0.obj");
     carPaintModel = new Model("car/Paint_LOD0.obj");
     carInteriorModel = new Model("car/Interior_LOD0.obj");
@@ -664,6 +666,7 @@ void drawObjects()
     shader->setFloat("metalness", 0.0f);
 
     carBodyModel->Draw(*shader);
+	//treeModel->Draw(*shader);
 
     // draw car
     shader->setMat4("model", model);
@@ -698,6 +701,11 @@ void drawObjects()
     shader->setFloat("specularReflectance", 0.2f);
     shader->setFloat("roughness", 0.95f);
     floorModel->Draw(*shader);
+
+	// draw tree
+	model = glm::mat4(1.0f);
+	shader->setMat4("model", model);
+	treeModel->Draw(*shader);
 
     shader->setFloat("specularReflectance", 1.0f);
     shader->setFloat("specularExponent", 20.0f);

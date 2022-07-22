@@ -707,6 +707,11 @@ void drawObjects()
 	shader->setMat4("model", model);
 	treeModel->Draw(*shader);
 
+	// draw tree
+	model = glm::translate(model, glm::vec3(-10.f, .0f, .0f));
+	shader->setMat4("model", model);
+	treeModel->Draw(*shader);
+
     shader->setFloat("specularReflectance", 1.0f);
     shader->setFloat("specularExponent", 20.0f);
     shader->setFloat("roughness", 0.25f);

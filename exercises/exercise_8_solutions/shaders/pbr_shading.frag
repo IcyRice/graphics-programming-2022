@@ -128,7 +128,7 @@ vec3 GetNormalMap()
    return TBN * normalMap;
 }
 
-vec3 GetAmbientLighting(vec3 albedo, vec3 normal)
+vec3 GetAmbientLighting(vec3 albedo, vec3 normal) // EDIT: simplified ambient since I removed the Skybox
 {
    // TODO 8.2 : Remove this line
    vec3 ambient = ambientLightColor.rgb * albedo;

@@ -92,16 +92,18 @@ struct Config
         // Adding lights
         //lights.emplace_back(position, color, intensity, radius);
 
-        // light 1
+        // light 1 (sun, directional light)
         lights.emplace_back(glm::vec3(-1.0f, 1.0f, -0.5f), glm::vec3(1.0f, 1.0f, 1.0f), 1.0f, 0.0f);
 
-        // light 2
-        lights.emplace_back(glm::vec3( 1.0f, 1.5f, 0.0f), glm::vec3(0.7f, 0.2f, 1.0f), 1.0f, 10.0f);
+        // light 2 (campfire, point light)
+        //lights.emplace_back(glm::vec3( 1.0f, 1.5f, 0.0f), glm::vec3(0.7f, 0.2f, 1.0f), 1.0f, 10.0f);
+        lights.emplace_back(glm::vec3(1.0f, 1.5f, 0.0f), glm::vec3(1.f, 0.6f, 0.f), 2.0f, 10.0f);
     }
 
     // ambient light
     glm::vec3 ambientLightColor = {1.0f, 1.0f, 1.0f};
-    float ambientLightIntensity = 0.25f;
+    //float ambientLightIntensity = 0.25f;
+    float ambientLightIntensity = 0.f;
 
     // material
     glm::vec3 reflectionColor = {0.9f, 0.9f, 0.2f};
@@ -186,6 +188,7 @@ int main()
     floorModel = new Model("floor/floor.obj");
 
     // init skybox
+    /*
     vector<std::string> faces
     {
             "skybox/right.tga",
@@ -197,7 +200,8 @@ int main()
     };
     cubemapTexture = loadCubemap(faces);
     skyboxVAO = initSkyboxBuffers();
-    skyboxShader = new Shader("shaders/skybox.vert", "shaders/skybox.frag");
+    */
+    skyboxShader = new Shader("shaders/skybox.vert", "shaders/skybox.frag"); // this is still required when removing skybox
 
     createShadowMap();
     shadowMap_shader = new Shader("shaders/shadowmap.vert", "shaders/shadowmap.frag");
@@ -239,9 +243,12 @@ int main()
         // Rotate light 2
         if (lightRotationSpeed > 0.0f)
         {
-            glm::vec4 rotatedLight = glm::rotate(glm::mat4(1.0f), lightRotationSpeed * deltaTime, glm::vec3(0.0f, 1.0f, 0.0f)) * glm::vec4(config.lights[1].position, 1.0f);
-            config.lights[1].position = glm::vec3(rotatedLight.x, rotatedLight.y, rotatedLight.z);
+            config.lights[1].intensity = sin(currentFrame) + 0.3f;
+            //glm::vec4 rotatedLight = glm::rotate(glm::mat4(1.0f), lightRotationSpeed * deltaTime, glm::vec3(0.0f, 1.0f, 0.0f)) * glm::vec4(config.lights[1].position, 1.0f);
+            //config.lights[1].position = glm::vec3(rotatedLight.x, rotatedLight.y, rotatedLight.z);
 			config.lights[0].position = glm::vec3(sin(currentFrame), cos(currentFrame), 0);
+            config.lights[0].color = glm::vec3(1.f, cos(currentFrame), cos(currentFrame)); // max red at midnight, (1,1,1) whitelight at noon.
+            config.lights[0].intensity = cos(currentFrame) + 0.5f;
         } // lights[0] is the sun
 		// the position of the sun is the direction that I need to move on each frame
         glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
@@ -582,6 +589,7 @@ void drawShadowMap()
     float shadowMapSize = 6.0f;
     float shadowMapDepthRange = 10.0f;
     float half = shadowMapSize / 2.0f; // bounding the area of the shadowmap - should be enlarged for my project
+    //float half = shadowMapSize / 2.0f; // bounding the area of the shadowmap - should be enlarged for my project
     glm::mat4 lightProjection = glm::ortho(-half, half, -half, half, near_plane, near_plane + shadowMapDepthRange);
     glm::mat4 lightView = glm::lookAt(glm::normalize(config.lights[0].position) * shadowMapDepthRange * 0.5f, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
     lightSpaceMatrix = lightProjection * lightView;
@@ -654,7 +662,7 @@ void drawObjects()
 
     glm::mat4 model = glm::mat4(1.0f);
     shader->setMat4("model", model);
-    carPaintModel->Draw(*shader);
+    //carPaintModel->Draw(*shader);
 
     // material uniforms for other car parts (hardcoded)
     shader->setVec3("reflectionColor", 1.0f, 1.0f, 1.0f);
@@ -665,9 +673,11 @@ void drawObjects()
     shader->setFloat("roughness", 0.5f);
     shader->setFloat("metalness", 0.0f);
 
-    carBodyModel->Draw(*shader);
+    //carBodyModel->Draw(*shader);
 	//treeModel->Draw(*shader);
 
+
+    /*
     // draw car
     shader->setMat4("model", model);
     carLightModel->Draw(*shader);
@@ -694,6 +704,7 @@ void drawObjects()
     model = glm::translate(model, glm::vec3(-.7432f, .328f, -1.39f));
     shader->setMat4("model", model);
     carWheelModel->Draw(*shader);
+    */
 
     // draw floor
     model = glm::scale(glm::mat4(1.0), glm::vec3(5.f, 5.f, 5.f));
@@ -703,7 +714,8 @@ void drawObjects()
     floorModel->Draw(*shader);
 
 	// draw tree
-	model = glm::mat4(1.0f);
+	model = glm::mat4(1.f);
+    model = glm::translate(model, glm::vec3(5.f, .0f, .0f));
 	shader->setMat4("model", model);
 	treeModel->Draw(*shader);
 
@@ -718,7 +730,7 @@ void drawObjects()
     model = glm::mat4(1.0f);
     shader->setMat4("model", model);
 
-    carWindowsModel->Draw(*shader);
+    //carWindowsModel->Draw(*shader);
 }
 
 void processInput(GLFWwindow *window) {

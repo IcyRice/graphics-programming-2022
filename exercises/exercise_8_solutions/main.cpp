@@ -103,7 +103,7 @@ struct Config
     // ambient light
     glm::vec3 ambientLightColor = {1.0f, 1.0f, 1.0f};
     //float ambientLightIntensity = 0.25f;
-    float ambientLightIntensity = 0.f;
+    float ambientLightIntensity = .2f;
 
     // material
     glm::vec3 reflectionColor = {0.9f, 0.9f, 0.2f};
@@ -113,6 +113,9 @@ struct Config
     float specularExponent = 10.0f;
     float roughness = 0.5f;
     float metalness = 0.0f;
+
+    float timeOfDay;
+    bool timeActive;
 
     std::vector<Light> lights;
 
@@ -255,26 +258,72 @@ int main()
         */
         
         // TODO: Scale the time value.
+        //float timeOfDay = fmodf(currentFrame, 24.0f) / 24.f; // 0.0<->1.0
+        
+        if (config.timeActive) {
+            config.timeOfDay = fmodf(currentFrame, 24.0f) / 24.f; // 0.0<->1.0    
+        }
+        float period = config.timeOfDay * 6;
+
+        // Sun, Directional Light
+        //config.lights[0].color = glm::vec3(1.f, cos(currentFrame), cos(currentFrame)); // max red at midnight, (1,1,1) whitelight at noon.
+
+        config.lights[0].position = glm::vec3(-sin(glm::pi<float>() * 2.f * config.timeOfDay), -cos(glm::pi<float>() * 2.f * config.timeOfDay), 0);
+
+        //config.lights[0].intensity = cos(currentFrame) + 0.5f;
+        config.lights[0].intensity = 1.f;
+        // define 4 preset colours and blend - midnight, noon, dawn, dusk
+        glm::vec3 ambMidnight = glm::vec3(0.f, 0.f, 0.f);
+        glm::vec3 ambNoon = glm::vec3(1.f, 1.f, 1.f);
+        glm::vec3 ambDawn = glm::vec3(.8f, .4f, .4f);
+        glm::vec3 ambDusk = glm::vec3(.8f, .4f, .4f);
+        
+        glm::vec3 sunMidnight = glm::vec3(0.f, 0.f, 0.f);
+        glm::vec3 sunNoon = glm::vec3(1.f, 1.f, 1.f);
+        glm::vec3 sunDawn = glm::vec3(.8f, .4f, .4f);
+        glm::vec3 sunDusk = glm::vec3(.8f, .4f, .4f);
+
+        glm::vec3 skyMidnight = glm::vec3(0.f, 0.f, 0.1f);
+        glm::vec3 skyNoon = glm::vec3(.6f, .6f, 1.f);
+        glm::vec3 skyDawn = glm::vec3(.2f, .2f, .2f);
+        glm::vec3 skyDusk = glm::vec3(.3f, .2f, .2f);
 
         
 
-        // Sun, Directional Light
-        config.lights[0].position = glm::vec3(sin(currentFrame), cos(currentFrame), 0);
-        config.lights[0].color = glm::vec3(1.f, cos(currentFrame), cos(currentFrame)); // max red at midnight, (1,1,1) whitelight at noon.
-        config.lights[0].intensity = cos(currentFrame) + 0.5f;
+        glm::vec3 skyColor = glm::vec3(1.f);
+
+        if (period < 1.0f) {
+            config.lights[0].color = glm::mix(sunMidnight, sunDawn, period);
+            skyColor = glm::mix(skyMidnight, skyDawn, period);
+            config.ambientLightColor = glm::mix(ambMidnight, ambDawn, period);
+        }
+        else if (period < 3.0f) {
+            config.lights[0].color = glm::mix(sunDawn, sunNoon, min(period - 1.f, 1.f));
+            skyColor = glm::mix(skyDawn, skyNoon, min(period - 1.f, 1.f));
+            config.ambientLightColor = glm::mix(ambDawn, ambNoon, min(period - 1.f, 1.f));
+        }
+        else if (period < 4.0f) {
+            config.lights[0].color = glm::mix(sunNoon, sunDusk, period - 3.f);
+            skyColor = glm::mix(skyNoon, skyDusk, period - 3.f);
+            config.ambientLightColor = glm::mix(ambNoon, ambDusk, period - 3.f);
+        }
+        else {
+            config.lights[0].color = glm::mix(sunDusk, sunMidnight, min(period - 4.f, 1.f));
+            skyColor = glm::mix(skyDusk, skyMidnight, min(period - 4.f, 1.f));
+            config.ambientLightColor = glm::mix(ambDusk, ambMidnight, min(period - 4.f, 1.f));
+        }
+        
+
+        //glm::mix()
 
         // Campfire, Point Light
-        config.lights[1].intensity = sin(currentFrame) + 1.f;
+        config.lights[1].intensity = cos(glm::pi<float>() * 2.f * config.timeOfDay) * 6.f;
 
         //Skybox flat color
         // TODO: implement some logic to handle relational color values based on time.
-        //glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
-        //glClearColor(sin(currentFrame), cos(currentFrame), cos(currentFrame), .2f);
-        float skyRed = sin(currentFrame);
-        float skyGreen = cos(currentFrame);
-        float skyBlue = cos(currentFrame);
-        float skyAlpha = 1.f;
-        glClearColor(skyRed, skyGreen, skyBlue, skyAlpha);
+        
+        skyColor = glm::pow(skyColor, glm::vec3(2.2f));
+        glClearColor(skyColor.x, skyColor.y, skyColor.z, 1.f);
 
         
 
@@ -282,7 +331,7 @@ int main()
 
         //drawLighting(currentFrame);
 
-        drawSkybox();
+        //drawSkybox();
 
         drawShadowMap();
 
@@ -354,6 +403,8 @@ void drawGui(){
         ImGui::DragFloat3("light 1 direction", (float*)&config.lights[0].position, .1f, -20, 20);
         ImGui::ColorEdit3("light 1 color", (float*)&config.lights[0].color);
         ImGui::SliderFloat("light 1 intensity", &config.lights[0].intensity, 0.0f, 2.0f);
+        ImGui::SliderFloat("sun time: ", &config.timeOfDay, 0.0f, 1.0f);
+        ImGui::Checkbox("Time active", &config.timeActive);
         ImGui::Separator();
 
         ImGui::Text("Light 2: ");
@@ -363,6 +414,7 @@ void drawGui(){
         ImGui::SliderFloat("light 2 radius", &config.lights[1].radius, 0.01f, 50.0f);
         ImGui::SliderFloat("light 2 speed", &lightRotationSpeed, 0.0f, 2.0f);
         ImGui::Separator();
+
 
         ImGui::Text("Car paint material: ");
         ImGui::ColorEdit3("color", (float*)&config.reflectionColor);
@@ -636,8 +688,8 @@ void drawShadowMap()
     // the light position and direction that will be rendered to produce the depth texture.
     // Geometry outside of this range will not be considered when computing shadows.
     float near_plane = 1.0f;
-    float shadowMapSize = 6.0f;
-    float shadowMapDepthRange = 10.0f;
+    float shadowMapSize = 120.0f;
+    float shadowMapDepthRange = 50.0f;
     float half = shadowMapSize / 2.0f; // bounding the area of the shadowmap - should be enlarged for my project
     //float half = shadowMapSize / 2.0f; // bounding the area of the shadowmap - should be enlarged for my project
     glm::mat4 lightProjection = glm::ortho(-half, half, -half, half, near_plane, near_plane + shadowMapDepthRange);

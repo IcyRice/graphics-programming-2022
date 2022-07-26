@@ -131,20 +131,20 @@ vec3 GetNormalMap()
 vec3 GetAmbientLighting(vec3 albedo, vec3 normal)
 {
    // TODO 8.2 : Remove this line
-   //vec3 ambient = ambientLightColor.rgb * albedo;
+   vec3 ambient = ambientLightColor.rgb * albedo;
 
    // TODO 8.2 : Get the ambient color by sampling the skybox using the normal.
-   vec3 ambient = textureLod(skybox, normal, 5.0f).rgb;
+   //vec3 ambient = textureLod(skybox, normal, 5.0f).rgb;
 
    // TODO 8.2 : Scale the light by the albedo, considering also that it gets reflected equally in all directions
-   ambient *= albedo / PI;
+   //ambient *= albedo / PI;
 
    // Only apply ambient during the first light pass
    ambient *= ambientLightColor.a; 
 
    // NEW! Ambient occlusion (try disabling it to see how it affects the visual result)
-   float ambientOcclusion = texture(texture_ambient1, textureCoordinates).r;
-   ambient *= ambientOcclusion;
+   //float ambientOcclusion = texture(texture_ambient1, textureCoordinates).r;
+   //ambient *= ambientOcclusion;
 
    return ambient;
 }

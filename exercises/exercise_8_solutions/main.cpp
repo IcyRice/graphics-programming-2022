@@ -97,7 +97,7 @@ struct Config
 
         // light 2 (campfire, point light)
         //lights.emplace_back(glm::vec3( 1.0f, 1.5f, 0.0f), glm::vec3(0.7f, 0.2f, 1.0f), 1.0f, 10.0f);
-        lights.emplace_back(glm::vec3(1.0f, 1.5f, 0.0f), glm::vec3(1.f, 0.6f, 0.f), 2.0f, 10.0f);
+        lights.emplace_back(glm::vec3(1.0f, 1.5f, 0.0f), glm::vec3(1.f, 0.6f, 0.f), 2.0f, 20.0f);
     }
 
     // ambient light
@@ -241,6 +241,7 @@ int main()
         processInput(window);
 
         // Rotate light 2
+        /*
         if (lightRotationSpeed > 0.0f)
         {
             config.lights[1].intensity = sin(currentFrame) + 0.3f;
@@ -251,9 +252,35 @@ int main()
             config.lights[0].intensity = cos(currentFrame) + 0.5f;
         } // lights[0] is the sun
 		// the position of the sun is the direction that I need to move on each frame
-        glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+        */
+        
+        // TODO: Scale the time value.
+
+        
+
+        // Sun, Directional Light
+        config.lights[0].position = glm::vec3(sin(currentFrame), cos(currentFrame), 0);
+        config.lights[0].color = glm::vec3(1.f, cos(currentFrame), cos(currentFrame)); // max red at midnight, (1,1,1) whitelight at noon.
+        config.lights[0].intensity = cos(currentFrame) + 0.5f;
+
+        // Campfire, Point Light
+        config.lights[1].intensity = sin(currentFrame) + 1.f;
+
+        //Skybox flat color
+        // TODO: implement some logic to handle relational color values based on time.
+        //glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+        //glClearColor(sin(currentFrame), cos(currentFrame), cos(currentFrame), .2f);
+        float skyRed = sin(currentFrame);
+        float skyGreen = cos(currentFrame);
+        float skyBlue = cos(currentFrame);
+        float skyAlpha = 1.f;
+        glClearColor(skyRed, skyGreen, skyBlue, skyAlpha);
+
+        
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        //drawLighting(currentFrame);
 
         drawSkybox();
 
@@ -528,6 +555,29 @@ unsigned int loadCubemap(vector<std::string> faces)
 }
 
 
+void drawLighting(float currentFrame) {
+    
+    // Sun, Directional Light
+    config.lights[0].position = glm::vec3(sin(currentFrame), cos(currentFrame), 0);
+    config.lights[0].color = glm::vec3(1.f, cos(currentFrame), cos(currentFrame)); // max red at midnight, (1,1,1) whitelight at noon.
+    config.lights[0].intensity = cos(currentFrame) + 0.5f;
+
+    // Campfire, Point Light
+    config.lights[1].intensity = sin(currentFrame) + 1.f;
+
+    //Skybox flat color
+    // TODO: implement some logic to handle relational color values based on time.
+    //glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+    //glClearColor(sin(currentFrame), cos(currentFrame), cos(currentFrame), .2f);
+    float skyRed = sin(currentFrame);
+    float skyGreen = cos(currentFrame);
+    float skyBlue = cos(currentFrame);
+    float skyAlpha = 1.f;
+
+    glClearColor(skyRed, skyGreen, skyBlue, skyAlpha);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
 
 void drawSkybox()
 {
@@ -715,14 +765,69 @@ void drawObjects()
 
 	// draw tree
 	model = glm::mat4(1.f);
-    model = glm::translate(model, glm::vec3(5.f, .0f, .0f));
+    model = glm::translate(model, glm::vec3(7.f, .0f, -6.0f));
 	shader->setMat4("model", model);
 	treeModel->Draw(*shader);
 
+    // draw tree
+    model = glm::mat4(1.f);
+    model = glm::translate(model, glm::vec3(0.f, .0f, -20.0f));
+    shader->setMat4("model", model);
+    treeModel->Draw(*shader);
+
+    // draw tree
+    model = glm::mat4(1.f);
+    model = glm::translate(model, glm::vec3(8.f, .0f, 5.0f));
+    shader->setMat4("model", model);
+    treeModel->Draw(*shader);
+
+    // draw tree
+    model = glm::mat4(1.f);
+    model = glm::translate(model, glm::vec3(-5.f, .0f, -5.0f));
+    shader->setMat4("model", model);
+    treeModel->Draw(*shader);
+
+    // draw tree
+    model = glm::mat4(1.f);
+    model = glm::translate(model, glm::vec3(-10.f, .0f, 10.0f));
+    shader->setMat4("model", model);
+    treeModel->Draw(*shader);
+
 	// draw tree
+    model = glm::mat4(1.f);
 	model = glm::translate(model, glm::vec3(-10.f, .0f, .0f));
 	shader->setMat4("model", model);
 	treeModel->Draw(*shader);
+
+    // draw tree
+    model = glm::mat4(1.f);
+    model = glm::translate(model, glm::vec3(-2.f, .0f, 14.0f));
+    shader->setMat4("model", model);
+    treeModel->Draw(*shader);
+
+    // draw tree
+    model = glm::mat4(1.f);
+    model = glm::translate(model, glm::vec3(-25.f, .0f, -25.0f));
+    shader->setMat4("model", model);
+    treeModel->Draw(*shader);
+
+    // draw tree
+    model = glm::mat4(1.f);
+    model = glm::translate(model, glm::vec3(25.f, .0f, -25.0f));
+    shader->setMat4("model", model);
+    treeModel->Draw(*shader);
+
+    // draw tree
+    model = glm::mat4(1.f);
+    model = glm::translate(model, glm::vec3(-25.f, .0f, 25.0f));
+    shader->setMat4("model", model);
+    treeModel->Draw(*shader);
+
+    // draw tree
+    model = glm::mat4(1.f);
+    model = glm::translate(model, glm::vec3(25.f, .0f, 25.0f));
+    shader->setMat4("model", model);
+    treeModel->Draw(*shader);
 
     shader->setFloat("specularReflectance", 1.0f);
     shader->setFloat("specularExponent", 20.0f);

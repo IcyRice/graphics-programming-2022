@@ -283,7 +283,8 @@ int main()
         glm::vec3 skyNoon       = glm::vec3(.5f, .7f, 1.f);
         glm::vec3 skyDusk       = glm::vec3(.5f, .7f, 1.f); // sky has same colour at dusk, but the sun's light is more red.
 
-        // a day is cut into 6 parts, used for 4 periods, with the midnight/noon periods having 2 parts, making them double duration of dusk/dawn periods.
+        // a day is cut into 6 parts, used for 4 transition phases, with the midnight/noon phases having 2 parts, 
+        //      making them double duration of dusk/dawn periods.
         float period = config.timeOfDay * 6;
         if (period < 1.0f) {            // midnight -> dawn transition
             config.lights[0].color      = glm::mix(sunMidnight, sunDawn, period);

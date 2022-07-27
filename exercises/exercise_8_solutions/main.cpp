@@ -249,20 +249,9 @@ int main()
 
         processInput(window);
 
-        // Rotate light 2
         /*
-        if (lightRotationSpeed > 0.0f)
-        {
-            config.lights[1].intensity = sin(currentFrame) + 0.3f;
-            //glm::vec4 rotatedLight = glm::rotate(glm::mat4(1.0f), lightRotationSpeed * deltaTime, glm::vec3(0.0f, 1.0f, 0.0f)) * glm::vec4(config.lights[1].position, 1.0f);
-            //config.lights[1].position = glm::vec3(rotatedLight.x, rotatedLight.y, rotatedLight.z);
-			config.lights[0].position = glm::vec3(sin(currentFrame), cos(currentFrame), 0);
-            config.lights[0].color = glm::vec3(1.f, cos(currentFrame), cos(currentFrame)); // max red at midnight, (1,1,1) whitelight at noon.
-            config.lights[0].intensity = cos(currentFrame) + 0.5f;
-        } // lights[0] is the sun
-		// the position of the sun is the direction that I need to move on each frame
+                    ### DAY NIGHT CYCLE IMPLEMENTATION ###
         */
-        
 
         // normalizing the 'currentFrame' timestamp into a timeOfDay value between 0.0 <-> 1.0
         // 0.0=midnight, 0.5=noon, 1.0=midnight | 1hour -> 1second.
@@ -272,59 +261,62 @@ int main()
 
         // Sun, Directional Light
         // Formula calculating sun position in a basic circular orbit, based on the time of day.
-        //config.lights[0].color = glm::vec3(1.f, cos(currentFrame), cos(currentFrame)); // max red at midnight, (1,1,1) whitelight at noon.
+        // The calculated sun position corresponds to the per frame stepwise direction-vector
         config.lights[0].position = glm::vec3(-sin(glm::pi<float>() * 2.f * config.timeOfDay), -cos(glm::pi<float>() * 2.f * config.timeOfDay), 0);
 
-        // sun light intensity is constant; using color values to simulate luminosity.
+        // sun light intensity is constant; instead using color values to simulate luminosity.
         config.lights[0].intensity = 1.f;
 
         // define 4 preset colours and lerp: midnight, noon, dawn, dusk
-        glm::vec3 ambMidnight = glm::vec3(0.f, 0.f, 0.f); // zero ambient at midnight to produce better silhouettes
-        glm::vec3 ambDawn = glm::vec3(.8f, .4f, .4f);
-        glm::vec3 ambNoon = glm::vec3(1.f, 1.f, 1.f);
-        glm::vec3 ambDusk = glm::vec3(.8f, .4f, .4f);
+        glm::vec3 ambMidnight   = glm::vec3(0.f, 0.f, 0.f); // zero ambient at midnight to produce better silhouettes
+        glm::vec3 ambDawn       = glm::vec3(.8f, .4f, .4f);
+        glm::vec3 ambNoon       = glm::vec3(1.f, 1.f, 1.f);
+        glm::vec3 ambDusk       = glm::vec3(.8f, .4f, .4f);
         
-        glm::vec3 sunMidnight = glm::vec3(0.f, 0.f, 0.f);
-        glm::vec3 sunDawn = glm::vec3(.8f, .4f, .4f);
-        glm::vec3 sunNoon = glm::vec3(1.f, 1.f, 1.f);
-        glm::vec3 sunDusk = glm::vec3(.9f, .3f, .3f); // red sunset glow
+        glm::vec3 sunMidnight   = glm::vec3(0.f, 0.f, 0.f); // darkness at midnight except for campfire
+        glm::vec3 sunDawn       = glm::vec3(.8f, .4f, .4f);
+        glm::vec3 sunNoon       = glm::vec3(1.f, 1.f, 1.f);
+        glm::vec3 sunDusk       = glm::vec3(.9f, .3f, .3f); // red sunset glow
 
-        glm::vec3 skyMidnight = glm::vec3(0.f, 0.f, 0.1f);
-        glm::vec3 skyDawn = glm::vec3(.3f, .4f, .5f);
-        glm::vec3 skyNoon = glm::vec3(.5f, .7f, 1.f);
-        glm::vec3 skyDusk = glm::vec3(.5f, .7f, 1.f); // sky has same colour at dusk, but the sun's light is more red.
+        glm::vec3 skyMidnight   = glm::vec3(0.f, 0.f, 0.1f); // a very dark blue for producing horizon and tree silhouettes
+        glm::vec3 skyDawn       = glm::vec3(.3f, .4f, .5f);
+        glm::vec3 skyNoon       = glm::vec3(.5f, .7f, 1.f);
+        glm::vec3 skyDusk       = glm::vec3(.5f, .7f, 1.f); // sky has same colour at dusk, but the sun's light is more red.
 
-        // a day is cut into 6 parts, that's used for 4 periods, with
+        // a day is cut into 6 parts, used for 4 periods, with the midnight/noon periods having 2 parts, making them double duration of dusk/dawn periods.
         float period = config.timeOfDay * 6;
-        if (period < 1.0f) {
-            config.lights[0].color = glm::mix(sunMidnight, sunDawn, period);
-            config.skyColor = glm::mix(skyMidnight, skyDawn, period);
-            config.ambientLightColor = glm::mix(ambMidnight, ambDawn, period);
+        if (period < 1.0f) {            // midnight -> dawn transition
+            config.lights[0].color      = glm::mix(sunMidnight, sunDawn, period);
+            config.skyColor             = glm::mix(skyMidnight, skyDawn, period);
+            config.ambientLightColor    = glm::mix(ambMidnight, ambDawn, period);
         }
-        else if (period < 3.0f) {
-            config.lights[0].color = glm::mix(sunDawn, sunNoon, min(period - 1.f, 1.f));
-            config.skyColor = glm::mix(skyDawn, skyNoon, min(period - 1.f, 1.f));
-            config.ambientLightColor = glm::mix(ambDawn, ambNoon, min(period - 1.f, 1.f));
+        else if (period < 3.0f) {       // dawn -> noon transition
+            config.lights[0].color      = glm::mix(sunDawn, sunNoon, min(period - 1.f, 1.f));
+            config.skyColor             = glm::mix(skyDawn, skyNoon, min(period - 1.f, 1.f));
+            config.ambientLightColor    = glm::mix(ambDawn, ambNoon, min(period - 1.f, 1.f));
         }
-        else if (period < 4.0f) {
-            config.lights[0].color = glm::mix(sunNoon, sunDusk, period - 3.f);
-            config.skyColor = glm::mix(skyNoon, skyDusk, period - 3.f);
-            config.ambientLightColor = glm::mix(ambNoon, ambDusk, period - 3.f);
+        else if (period < 4.0f) {       // noon -> dusk transition
+            config.lights[0].color      = glm::mix(sunNoon, sunDusk, period - 3.f);
+            config.skyColor             = glm::mix(skyNoon, skyDusk, period - 3.f);
+            config.ambientLightColor    = glm::mix(ambNoon, ambDusk, period - 3.f);
         }
-        else {
-            config.lights[0].color = glm::mix(sunDusk, sunMidnight, min(period - 4.f, 1.f));
-            config.skyColor = glm::mix(skyDusk, skyMidnight, min(period - 4.f, 1.f));
-            config.ambientLightColor = glm::mix(ambDusk, ambMidnight, min(period - 4.f, 1.f));
+        else {                          // dusk -> midnight transition
+            config.lights[0].color      = glm::mix(sunDusk, sunMidnight, min(period - 4.f, 1.f));
+            config.skyColor             = glm::mix(skyDusk, skyMidnight, min(period - 4.f, 1.f));
+            config.ambientLightColor    = glm::mix(ambDusk, ambMidnight, min(period - 4.f, 1.f));
         }
         
 
         // Campfire, Point Light
+        // maximizing campfire intensity at midnight. Value < 0.0 starting dawn. Value > 0.0 starting dusk.
+        // The cosine function curve is negative between time [0.25<->0.75]
         config.lights[1].intensity = cos(glm::pi<float>() * 2.f * config.timeOfDay) * 6.f;
 
         config.skyColor = glm::pow(config.skyColor, glm::vec3(2.2f));
         glClearColor(config.skyColor.x, config.skyColor.y, config.skyColor.z, 1.f);
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 
         //drawLighting(currentFrame);
         //drawSkybox();
@@ -412,8 +404,9 @@ void drawGui(){
 
         ImGui::Text("Skybox : ");
         ImGui::ColorEdit3("Skybox Color", (float*)&config.skyColor);
+        ImGui::Separator();
 
-        /*
+        /* // old UI from exercises
         ImGui::Text("Car paint material: ");
         ImGui::ColorEdit3("color", (float*)&config.reflectionColor);
         ImGui::Separator();
@@ -606,30 +599,6 @@ unsigned int loadCubemap(vector<std::string> faces)
 }
 
 
-void drawLighting(float currentFrame) { // not used
-    
-    // Sun, Directional Light
-    config.lights[0].position = glm::vec3(sin(currentFrame), cos(currentFrame), 0);
-    config.lights[0].color = glm::vec3(1.f, cos(currentFrame), cos(currentFrame)); // max red at midnight, (1,1,1) whitelight at noon.
-    config.lights[0].intensity = cos(currentFrame) + 0.5f;
-
-    // Campfire, Point Light
-    config.lights[1].intensity = sin(currentFrame) + 1.f;
-
-    //Skybox flat color
-    // TODO: implement some logic to handle relational color values based on time.
-    //glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
-    //glClearColor(sin(currentFrame), cos(currentFrame), cos(currentFrame), .2f);
-    float skyRed = sin(currentFrame);
-    float skyGreen = cos(currentFrame);
-    float skyBlue = cos(currentFrame);
-    float skyAlpha = 1.f;
-
-    glClearColor(skyRed, skyGreen, skyBlue, skyAlpha);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-}
-
-
 void drawSkybox()
 {
     // render skybox
@@ -687,10 +656,9 @@ void drawShadowMap()
     // the light position and direction that will be rendered to produce the depth texture.
     // Geometry outside of this range will not be considered when computing shadows.
     float near_plane = 1.0f;
-    float shadowMapSize = 120.0f;
+    float shadowMapSize = 120.0f;       // EDIT: increasesed size and depth of shadowmap
     float shadowMapDepthRange = 50.0f;
-    float half = shadowMapSize / 2.0f; // bounding the area of the shadowmap - should be enlarged for my project
-    //float half = shadowMapSize / 2.0f; // bounding the area of the shadowmap - should be enlarged for my project
+    float half = shadowMapSize / 2.0f; // bounding the area of the shadowmap - should be enlarged for my project    
     glm::mat4 lightProjection = glm::ortho(-half, half, -half, half, near_plane, near_plane + shadowMapDepthRange);
     glm::mat4 lightView = glm::lookAt(glm::normalize(config.lights[0].position) * shadowMapDepthRange * 0.5f, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
     lightSpaceMatrix = lightProjection * lightView;
